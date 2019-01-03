@@ -65,7 +65,18 @@ In addition, the `MutatingAdmissionWebhook` and `ValidatingAdmissionWebhook` adm
     --namespace default
   ```
 
-- Patch the `MutatingWebhookConfiguration` by substituting the `$CA_BUNDLE` value from the running cluster
+- (PKS) SSH into one of your cluster's `master` instances, grab the cluster-signing-ca:
+ ```
+ master/74cecf9e-3500-4192-b149-9abc384b4d9d:/var/vcap/bosh_ssh/bosh_25df6ffea68746a# cat /var/vcap/jobs/kube-controller-manager/config/cluster-signing-ca.pem
+ ```
+
+- Copy the cluster-signing-ca pem into `./deploy/signing-ca-configmap.yml` and deploy it:
+ ```
+ kubectl create -f deploy/signing-ca-configmap.yaml
+ ```
+
+- Patch the `MutatingWebhookConfiguration` by substituting the `$CA_BUNDLE` value from the running cluster.
+  This script was slightly modified from the original to reference the `signing-ca` configMap you just created.
 
   ```
   cat ./deploy/imageswap-webhook-mwc.yaml | \
